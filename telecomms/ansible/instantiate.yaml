@@ -20,3 +20,18 @@
 
     - debug:
         msg: "Webserver IP: {{ webres.instances[0].networks[0].ip }}"
+
+    - name: Insert private ips into ansible hosts file
+      ansible.builtin.blockinfile:
+        path: /etc/ansible/hosts
+        block: |
+          [webserver]
+          {{ webres.instances[0].networks[0].ip }}
+
+          [db]
+          
+
+          [client]
+        
+        create: yes
+        insertafter: EOF
