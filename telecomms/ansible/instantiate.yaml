@@ -17,5 +17,6 @@
           name: webserver-vm
         state: present
       register: webres
+
     - debug:
-      msg: "Webserver IP: {{ res.instances[0].networks[0].ip }}"
+        msg: "Webserver IP: {{ webres.instances[0].networks[0].ip }}"
