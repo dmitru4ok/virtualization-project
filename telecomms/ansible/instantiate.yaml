@@ -1,0 +1,18 @@
+---
+- name: Instantiate VMs
+  gather_facts: no
+  hosts: localhost
+  tasks:
+    - name: Install pyone
+      ansible.builtin.pip:
+        name: pyone
+        state: present
+    - name: Instantiate webserver templated VM
+      community.general.one_vm:
+        api_url: https://grid5.mif.vu.lt/cloud3/RPC2
+        template_id: 1737
+        disk_size: 8 GB
+        memory: 1024 MB
+        attributes:
+          name: webserver-vm
+    
