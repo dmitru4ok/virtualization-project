@@ -5,7 +5,7 @@
   tasks:
     - name: Install pyone
       ansible.builtin.pip:
-        name: pyone=6.10.0 # crashes without version 
+        name: pyone==6.10.0 # crashes without version 
         state: present
     - name: Instantiate webserver templated VM
       community.general.one_vm:
