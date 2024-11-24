@@ -16,4 +16,4 @@ sudo apt update && sudo apt -y upgrade && sudo apt -y install ansible
 
 sudo apt install python3-pip -y
 
-ansible-playbook ../ansible/instantiate.yaml
+sudo ansible-playbook ../ansible/instantiate.yaml

@@ -1,6 +1,7 @@
 ---
 - name: Instantiate VMs
   gather_facts: no
+  become: true
   hosts: localhost
   tasks:
     - name: Install pyone
