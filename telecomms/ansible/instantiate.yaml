@@ -3,6 +3,10 @@
   gather_facts: no
   become: true
   hosts: localhost
+  vars_files:
+    - ../misc/auth/webserver_auth 
+    - ../misc/auth/db_auth
+    - ../misc/auth/client_auth
   tasks:
     - name: Install pyone
       ansible.builtin.pip:
@@ -19,7 +23,7 @@
           name: webserver-vm
         state: present
       environment:
-        ONE_AUTH: /root/auth/webserver_auth
+        ONE_AUTH: ../misc/auth/webserver_auth
       register: webres
 
     - debug:

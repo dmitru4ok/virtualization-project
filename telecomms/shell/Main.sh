@@ -1,24 +1,10 @@
 # to be run on ubuntu 22/deb 12
 
-echo "CREDENTIALS REQUIRED FOR creating WEBSERVER VM: "
-read -p "OpenNebula login: " WEBSERVER_VM_UNAME
-read -sp "OpenNebula password: " WEBSERVER_VM_PASS
+echo "ANSIBLE-VALUT pawssword: "
+read -sp "OpenNebula login: " VAULT_PASS
 echo
+echo ${VAULT_PASS} > vault-pass.txt
 
-echo "CREDENTIALS REQUIRED FOR creating DB VM: "
-read -p "OpenNebula login: " DB_VM_UNAME
-read -sp "OpenNebula password: " DB_VM_PASS
-echo
-
-echo "CREDENTIALS REQUIRED FOR creating CLIENT VM: "
-read -p "OpenNebula login: " CLIENT_VM_UNAME
-read -sp "OpenNebula password: " CLIENT_VM_PASS
-echo
-
-mkdir -p /root/auth
-echo "$WEBSERVER_VM_UNAME:$WEBSERVER_VM_PASS" > /root/auth/webserver_auth
-echo "$DB_VM_UNAME:$DB_VM_PASS" > /root/auth/db_auth
-echo "$CLIENT_VM_UNAME:$CLIENT_VM_PASS" > /root/auth/client_auth
 
 sudo apt update
 UBUNTU_CODENAME=jammy
@@ -31,4 +17,4 @@ sudo apt update && sudo apt -y upgrade && sudo apt -y install ansible
 
 sudo apt install python3-pip -y
 
-sudo ansible-playbook ../ansible/instantiate.yaml
+sudo ansible-playbook ../ansible/instantiate.yaml --vault-password-file vault-pass.txt
