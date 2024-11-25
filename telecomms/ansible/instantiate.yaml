@@ -4,9 +4,9 @@
   become: true
   hosts: localhost
   vars_files:
-    - ../misc/auth/webserver_auth 
-    - ../misc/auth/db_auth
-    - ../misc/auth/client_auth
+    - ../misc/auth/webserver_auth.yaml
+    - ../misc/auth/client_auth.yaml
+    - ../misc/auth/db_auth.yaml
   tasks:
     - name: Install pyone
       ansible.builtin.pip:
@@ -16,14 +16,14 @@
     - name: Instantiate webserver templated VM
       community.general.one_vm:
         api_url: https://grid5.mif.vu.lt/cloud3/RPC2
+        api_username: "{{ webserver_login }}"
+        api_password: "{{ webserver_password }}"
         template_id: 1737
         disk_size: 8 GB
         memory: 1024 MB
         attributes:
           name: webserver-vm
         state: present
-      environment:
-        ONE_AUTH: ../misc/auth/webserver_auth
       register: webres
 
     - debug:
@@ -32,6 +32,8 @@
     - name: Instantiate database templated VM
       community.general.one_vm:
         api_url: https://grid5.mif.vu.lt/cloud3/RPC2
+        api_username: "{{ db_login }}"
+        api_password: "{{ db_password }}"
         template_id: 2646
         attributes:
           name: db-vm
@@ -46,6 +48,8 @@
     - name: Instantiate client templated VM
       community.general.one_vm:
         api_url: https://grid5.mif.vu.lt/cloud3/RPC2
+        api_username: "{{ client_login }}"
+        api_password: "{{ client_password }}"
         template_id: 2646
         attributes:
           name: client-vm

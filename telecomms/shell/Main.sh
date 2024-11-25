@@ -1,7 +1,6 @@
 # to be run on ubuntu 22/deb 12
 
-echo "ANSIBLE-VALUT pawssword: "
-read -sp "OpenNebula login: " VAULT_PASS
+read -sp "Ansible-vault password: " VAULT_PASS
 echo
 echo ${VAULT_PASS} > vault-pass.txt
 
@@ -18,3 +17,4 @@ sudo apt update && sudo apt -y upgrade && sudo apt -y install ansible
 sudo apt install python3-pip -y
 
 sudo ansible-playbook ../ansible/instantiate.yaml --vault-password-file vault-pass.txt
+rm vault-pass.txt
