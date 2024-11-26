@@ -1,6 +1,43 @@
 {% extends 'base.html' %}
 {% block title %}Create VM{% endblock %}
 {% block content %}
-<h2>Creating vms here (after auth only)</h2>
-<p>User: {{user_data["login"]}}</p>
-{% endblock%}
+<h1>Create a New Virtual Machine</h1>
+<form method="POST" action="/create_vm">
+    <div>
+        <label for="vm_name">VM Name:</label>
+        <input type="text" id="vm_name" name="vm_name" required>
+    </div>
+    
+    <div>
+        <label for="template">Template:</label>
+        <select id="template" name="template" required>
+            <option value="" disabled selected>Select a template</option>
+            {% for template in templates %}
+                <option value="{{ template.ID }}">{{ template.ID }} - {{ template.NAME }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div>
+        <label for="disk">Disk Size (GB):</label>
+        <input type="number" id="disk" name="disk" min="1" required>
+    </div>
+    
+    <div>
+        <label for="ram">RAM (MB):</label>
+        <input type="number" id="ram" name="ram" min="512" required>
+    </div>
+    
+    <div>
+        <label for="cpu">CPU:</label>
+        <input type="number" id="cpu" name="cpu" min="0.1" step="0.1" max="16" required>
+    </div>
+
+    <div>
+        <label for="cpu">VCPU:</label>
+        <input type="number" id="vcpu" name="vcpu" min="1" step="1" required>
+    </div>
+    
+    <button type="submit">Create VM</button>
+</form>
+{% endblock %}
