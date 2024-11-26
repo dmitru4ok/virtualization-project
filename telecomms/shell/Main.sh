@@ -5,15 +5,6 @@ echo
 
 # (to be sbstituted with ansible-vault)
 # -----
-echo "CREDENTIALS REQUIRED FOR creating WEBSERVER VM: "
-read -p "OpenNebula login: " WEBSERVER_VM_UNAME
-read -sp "OpenNebula password: " WEBSERVER_VM_PASS
-echo
-
-echo "CREDENTIALS REQUIRED FOR creating DB VM: "
-read -p "OpenNebula login: " DB_VM_UNAME
-read -sp "OpenNebula password: " DB_VM_PASS
-echo
 
 echo "CREDENTIALS REQUIRED FOR creating CLIENT VM: "
 read -p "OpenNebula login: " CLIENT_VM_UNAME
@@ -21,8 +12,6 @@ read -sp "OpenNebula password: " CLIENT_VM_PASS
 echo
 
 mkdir -p /root/auth
-echo "$WEBSERVER_VM_UNAME:$WEBSERVER_VM_PASS" > /root/auth/webserver_auth
-echo "$DB_VM_UNAME:$DB_VM_PASS" > /root/auth/db_auth
 echo "$CLIENT_VM_UNAME:$CLIENT_VM_PASS" > /root/auth/client_auth
 # -------
 
@@ -39,8 +28,6 @@ sudo apt install python3-pip -y
 
 sudo ansible-playbook ../ansible/instantiate.yaml
 
-WEBSERVER_PRIVATE_IP=$(awk '/\[webserver\]/ {getline; print}' /etc/ansible/hosts)
-DB_PRIVATE_IP=$(awk '/\[db\]/ {getline; print}' /etc/ansible/hosts)
 CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
 # sometimes require time even after the instantiation playbook
@@ -49,11 +36,6 @@ sleep 15
 eval "$(ssh-agent -s)" 
 ssh-keygen -t ed25519  -N "" -f ~/.ssh/id_ed25519
 ssh-add
-sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $WEBSERVER_VM_UNAME@$WEBSERVER_PRIVATE_IP
-sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $DB_VM_UNAME@$DB_PRIVATE_IP
 sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $CLIENT_VM_UNAME@$CLIENT_PRIVATE_IP
 
-
-
-# can safely execute ansible playbooks here, for example:
-ansible-playbook ../ansible/webserver.yaml --extra-vars "ansible_become_pass=$VM_PASS ansible_user=$WEBSERVER_VM_UNAME"
+ansible-playbook ../ansible/client.yaml --extra-vars "ansible_become_pass=$VM_PASS ansible_user=$CLIENt_VM_UNAME"
