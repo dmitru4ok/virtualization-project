@@ -63,12 +63,12 @@
 
     - name: Create Docker Compose directory
       file:
-        path: ~/server
+        path: ~/db
         state: directory
 
     - name: Create docker-compose.yaml file
       copy:
-        dest: ~/server/docker-compose.yaml
+        dest: ~/db/docker-compose.yaml
         content: |
           version: '3.7'
           services:
@@ -97,11 +97,11 @@
 
     - name: Create init.sql file
       copy:
-        dest: ~/server/init.sql
+        dest: ~/db/init.sql
         content: |
           CREATE TABLE sometable (id int);
 
     - name: Run Docker Compose
       shell: sudo docker compose up -d
       args:
-        chdir: ~/server
+        chdir: ~/db
