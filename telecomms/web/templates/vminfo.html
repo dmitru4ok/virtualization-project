@@ -1,4 +1,27 @@
 {% extends 'base.html' %}
 {% block title %}VM INFORMATION{% endblock %}
-{% block content %}<p>HI, I'M VM INSTANCE</p>{% endblock %}
+{% block content %}
+    <h4>Your {{vm_info["NAME"]}}, ID: {{ vm_info["ID"] }}</h4>
+    
+    <ul style="list-style: none">
+        <li>
+            <p>CONNECT HEALTHY: {{vm_info["CONNECT_INFO1"]}}</p>
+        </li>
+        <li>
+            <p>CONNECT MENTAL: {{vm_info["CONNECT_INFO2"]}}</p>
+        </li>
+        <li>
+            <p>DESCRIPTION: {{vm_info["DESCRIPTION"]}}</p>
+        </li>
+        <li>
+            <p>PUBLIC_IP: {{vm_info["PUBLIC_IP"]}}</p>
+        </li>
+        <li>
+            <p>PRIVATE_IP: {{vm_info["PRIVATE_IP"]}}</p>
+        </li>
+        <li>
+            <p>TCP_PORT_FORWARDING: {{vm_info["TCP_PORT_FORWARDING"]}}</p>
+        </li>
+    </ul>
+{% endblock %}
     

@@ -35,22 +35,27 @@ def fetch_vms_from_nebula_account():
     result = []
     res = one.vmpool.info(-1, -1, -1, -1).VM
     for vm in res:
-        # for 
-        # ut = vm.USER_TEMPLATE
         value = {
             "ID": vm.ID,
             "NAME": vm.NAME,
             "STATE": STATE[vm.STATE]
-            # "CONNECT1": ut["CONNECT_INFO1"], 
-            # "CONNECT2": ut["CONNECT_INFO2"],
-            # "DESCRIPTION": ut["DESCRIPTION"],
-            # "PRIVATE_IP": ut["DESCRIPTION"],
-            # "PUBLIC_IP": ut["PUBLIC_IP"],
-            # "PORT_FORWARDING": ut["TCP_PORT_FORWARDING"],
-            
         }
         result.append(value)
     return result
 
-
+def fetch_vm_by_id(id):
+    res = one.vm.info(id)
+    ut = res.USER_TEMPLATE
+    value = {
+        "ID": res.ID,
+        "NAME": res.NAME,
+        "STATE": STATE[res.STATE],
+        "CONNECT_INFO1": ut["CONNECT_INFO1"], 
+        "CONNECT_INFO2": ut["CONNECT_INFO2"],
+        "DESCRIPTION": ut["DESCRIPTION"],
+        "PRIVATE_IP": ut["PRIVATE_IP"],
+        "PUBLIC_IP": ut["PUBLIC_IP"],
+        "TCP_PORT_FORWARDING": ut["TCP_PORT_FORWARDING"]
+    }
+    return value
     

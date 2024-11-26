@@ -70,7 +70,19 @@ def create():
 
 @app.route('/vm/<int:vm_id>', methods=['GET', 'POST', 'DELETE'])
 def manage_vm(vm_id):
-    return render_template("vminfo.html")
+    if 'username' in session:
+        username = session['username']
+        user_data = find_user_in_db(username)
+        if user_data is not None:
+            if request.method == 'GET':
+                vm_info = onevm.fetch_vm_by_id(vm_id)
+                return render_template("vminfo.html", vm_info=vm_info)
+            elif request.method == 'DELETE':
+                pass  # delete
+            else:
+                pass  # post
+        raise NameError("No user in the database")
+    return redirect(url_for('login'))
     
 
 @app.route('/logout')
