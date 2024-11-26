@@ -2,8 +2,6 @@
 - name: Setup Wayland and Google Chrome
   hosts: client
   become: true
-  vars_files:
-    - vault.yml
 
   tasks:
     - name: Ensure /var/lib/apt/lists/ directory exists
@@ -42,6 +40,19 @@
         mkdir -p /run/user/$(id -u)
         chown $(id -u):$(id -g) /run/user/$(id -u)
       become: false
+    - name: Ensure environment setup for Weston
+      file:
+        path: "/run/user/{{ ansible_user }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0700'
+        
+    - name: Verify XDG_RUNTIME_DIR is set
+      ansible.builtin.lineinfile:
+        path: ~/.bashrc
+        line: "export XDG_RUNTIME_DIR=/run/user/{{ ansible_user_id }}"
+        state: present
 
     - name: Display instructions for manual steps
       debug:
