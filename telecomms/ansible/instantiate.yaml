@@ -13,6 +13,9 @@
       community.general.one_vm:
         api_url: https://grid5.mif.vu.lt/cloud3/RPC2
         template_id: 2646
+        disk_size: 20 GB
+        memory: 2048 MB
+        cpu: 1
         attributes:
           name: client-vm
         state: present
