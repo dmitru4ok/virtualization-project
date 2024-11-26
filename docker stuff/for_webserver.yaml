@@ -1,0 +1,198 @@
+---
+- name: Setup Web Server and Docker Compose for Node.js and PostgreSQL
+  hosts: webserver
+  become: yes
+  tasks:
+
+    # Install Docker dependencies
+    - name: Install Docker dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    # Add Docker GPG key
+    - name: Add Docker GPG key
+      shell: |
+        curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/docker-archive-keyring.gpg
+
+    # Add Docker APT repository with hardcoded Debian codename
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bullseye stable"
+        state: present
+        update_cache: yes
+
+    # Install Docker
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    # Install Node.js and npm
+    - name: Install Node.js and npm
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: present
+
+    # Create project directory structure in home directory
+    - name: Create web server project directory
+      file:
+        path: "~/server/views"
+        state: directory
+        mode: '0755'
+
+    # Create package.json
+    - name: Create package.json
+      copy:
+        dest: "~/server/package.json"
+        content: |
+          {
+            "name": "web-server",
+            "version": "1.0.0",
+            "description": "Web server to save data in PostgreSQL database",
+            "main": "server.js",
+            "scripts": {
+              "start": "node server.js"
+            },
+            "dependencies": {
+              "express": "^4.17.3",
+              "pg": "^8.7.1",
+              "body-parser": "^1.19.0"
+            }
+          }
+
+    # Run npm install
+    - name: Install npm dependencies
+      npm:
+        path: "~/server"
+        state: present
+
+    # Create server.js
+    - name: Create server.js
+      copy:
+        dest: "~/server/server.js"
+        content: |
+          const express = require('express');
+          const { Pool } = require('pg');
+          const bodyParser = require('body-parser');
+
+          const app = express();
+          const port = 3000;
+
+          // Use body-parser middleware to handle POST request data
+          app.use(bodyParser.urlencoded({ extended: true }));
+
+          // Create a connection pool to the PostgreSQL database
+          const pool = new Pool({
+            user: process.env.DATABASE_USER,
+            host: process.env.DATABASE_HOST,
+            database: process.env.DATABASE_NAME,
+            password: process.env.DATABASE_PASSWORD,
+            port: process.env.DATABASE_PORT,
+          });
+
+          // Serve the form (this is an HTML page where the user inputs data)
+          app.get('/', (req, res) => {
+            res.sendFile(__dirname + '/views/form.html');
+          });
+
+          // Handle the form submission
+          app.post('/submit', (req, res) => {
+            const { number } = req.body;
+
+            // Insert the number into the database
+            pool.query('INSERT INTO sometable (id) VALUES ($1)', [number], (err, result) => {
+              if (err) {
+                res.status(500).send('Error saving data');
+              } else {
+                res.send('Data saved successfully');
+              }
+            });
+          });
+          // Start the server
+          app.listen(port, () => {
+            console.log(`Server is running on http://localhost:${port}`);
+          });
+
+    # Create Dockerfile
+    - name: Create Dockerfile
+      copy:
+        dest: "~/server/Dockerfile"
+        content: |
+          FROM node:16
+
+          # Set the working directory in the container
+          WORKDIR /usr/src/app
+
+          # Copy the package.json and package-lock.json into the container
+          COPY package*.json ./
+
+          # Install dependencies
+          RUN npm install
+
+          # Copy the rest of the application code into the container
+          COPY . .
+
+          # Expose the port that the app will run on
+          EXPOSE 3000
+
+          # Run the server.js file when the container starts
+          CMD ["node", "server.js"]
+
+    # Create docker-compose.yaml
+    - name: Create docker-compose.yaml
+      copy:
+        dest: "~/server/docker-compose.yaml"
+        content: |
+          version: '3'
+          services:
+            web:
+              build: .
+              ports:
+                - "3000:3000"
+              environment:
+                - DATABASE_USER=app_user
+                - DATABASE_HOST=10.0.1.235
+                - DATABASE_PASSWORD=password
+                - DATABASE_PORT=9357
+                - DATABASE_NAME=app_db
+
+    # Create form.html
+    - name: Create form.html
+      copy:
+        dest: "~/server/views/form.html"
+        content: |
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Enter a Number</title>
+          </head>
+          <body>
+              <h1>Enter a Number</h1>
+              <form action="/submit" method="POST">
+                  <label for="number">Number:</label>
+                  <input type="number" id="number" name="number" required>
+                  <button type="submit">Submit</button>
+              </form>
+          </body>
+          </html>
+
+    # Run Docker Compose
+    - name: Run Docker Compose
+      shell: sudo docker compose up -d --build
+      args:
+        chdir: "~/server"
