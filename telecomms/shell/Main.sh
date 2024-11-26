@@ -38,4 +38,4 @@ ssh-keygen -t ed25519  -N "" -f ~/.ssh/id_ed25519
 ssh-add
 sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $CLIENT_VM_UNAME@$CLIENT_PRIVATE_IP
 
-ansible-playbook ../ansible/client.yaml --extra-vars "ansible_become_pass=$VM_PASS ansible_user=$CLIENt_VM_UNAME"
+ansible-playbook ../ansible/client.yaml --extra-vars "ansible_become_pass=$VM_PASS ansible_user=$CLIENT_VM_UNAME"
