@@ -61,5 +61,5 @@
             sudo -E weston
 
           To launch Google Chrome after Weston starts, use:
-            google-chrome-stable --ozone-platform=wayland
+            google-chrome-stable --ozone-platform=wayland --no-sandbox
 
