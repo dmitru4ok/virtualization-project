@@ -2,9 +2,20 @@
 
 {% block title %}Your Virtual Machines{% endblock %}
 {% block content %}
-    <h4>User: {{user_data["login"]}}, pass: {{user_data["password"]}}</h4>
-
-    {% for vm in vmlist %}
-    <p>ID in our db: {{vm["id"] }} - {{ vm["open_nebula_id"]}}</p>
-    {% endfor %}
+    <h4>Your VMs</h4>
+    {% if vmlist | length > 0 %}
+    <ol>
+        {% for vm in vmlist %}
+            <li>
+                {% if vm["STATE"] in ["INIT", "PENDING", "HOLD"] %}
+                    <p>ID: {{ vm["ID"] }} | name: {{ vm["NAME"]}} - {{ vm["STATE"]}}</p>
+                {% else %}
+                    <a href="/vm/{{ vm['ID'] }}">ID: {{ vm["ID"] }} | name: {{ vm["NAME"]}} - {{ vm["STATE"]}}</a>
+                {% endif%}    
+            </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+        <p>No VMs yet... <a href={{url_for('create')}}>Create one now!</a></p>
+    {% endif %}
 {% endblock %}

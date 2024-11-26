@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash
-from helpers import find_user_in_db, get_vm_data, add_vm, users, vms
+from helpers import find_user_in_db, get_vm_data, add_vm
 import onevm
 
 app = Flask(__name__)
@@ -16,9 +16,14 @@ def view_vm_list():
     if 'username' in session:
         username = session['username']
         user_data = find_user_in_db(username)
-        if user_data is not None:
-            users_vms_data = get_vm_data(user_data["vm_ids"]) # query our db
-            return render_template('vms.html', user_data=user_data, vmlist=users_vms_data)
+        if user_data is not None: # if user is in DB
+            users_vms_ids = get_vm_data(user_data) 
+            if len(user_data) > 0:
+                all_vms_data = onevm.fetch_vms_from_nebula_account()
+                full_vm_info = [vm for vm in all_vms_data if vm["ID"] in users_vms_ids]
+            else:
+                full_vm_info = []
+            return render_template('vms.html', vmlist=full_vm_info)
         
     return redirect(url_for('login'))
 
@@ -45,7 +50,7 @@ def create():
     if 'username' in session:
         username = session['username']
         user_data = find_user_in_db(username)
-        if user_data: 
+        if user_data is not None: 
             templates = onevm.get_nebula_oneadmin_templates()
             if request.method == 'GET':
                 return render_template("create.html", templates=templates, user_data=user_data)
@@ -53,22 +58,20 @@ def create():
             # CREATE VM LOGIC HERE
             template_id = int(request.form["template"])
             vm_name = request.form["vm_name"]
-            res_id = onevm.instantiate_vm(template_id, vm_name)
-            add_vm(user_data["login"], res_id)
+            try:
+                res_id = onevm.instantiate_vm(template_id, vm_name)
+            finally:
+                if res_id:
+                    add_vm(user_data["login"], res_id)
             return redirect(url_for("view_vm_list"))
     
         return redirect(url_for("login"))
 
 
-    
-    
-
-
 @app.route('/vm/<int:vm_id>', methods=['GET', 'POST', 'DELETE'])
 def manage_vm(vm_id):
-    pass
+    return render_template("vminfo.html")
     
-
 
 @app.route('/logout')
 def logout():
