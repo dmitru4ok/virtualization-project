@@ -1,0 +1,54 @@
+---
+- name: Setup Wayland and Google Chrome
+  hosts: client
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Ensure /var/lib/apt/lists/ directory exists
+      file:
+        path: /var/lib/apt/lists/
+        state: directory
+        mode: '0755'
+
+    - name: Update package index
+      apt:
+        update_cache: yes
+
+    - name: Install Weston, Wayland, and dependencies
+      apt:
+        name:
+          - weston
+          - dbus
+          - dbus-x11
+          - libxss1
+          - libappindicator3-1
+          - libindicator7
+          - wget
+          - gnupg
+        state: present
+
+    - name: Download Google Chrome package
+      shell: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/google-chrome.deb
+
+    - name: Install Google Chrome
+      apt:
+        deb: /tmp/google-chrome.deb
+        state: present
+
+    - name: Ensure environment setup for Weston
+      shell: |
+        mkdir -p /run/user/$(id -u)
+        chown $(id -u):$(id -g) /run/user/$(id -u)
+      become: false
+
+    - name: Display instructions for manual steps
+      debug:
+        msg: |
+          To run Weston, use:
+            sudo -E weston
+
+          To launch Google Chrome after Weston starts, use:
+            google-chrome-stable --ozone-platform=wayland
+
