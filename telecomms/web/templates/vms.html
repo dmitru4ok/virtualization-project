@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Virtual Machines{% endblock %}
+{% block content %}
+    <h4>User: {{user_data["login"]}}, pass: {{user_data["password"]}}</h4>
+
+    {% for vm in vmlist %}
+    <p>ID in our db: {{vm["id"] }} - {{ vm["open_nebula_id"]}}</p>
+    {% endfor %}
+{% endblock %}
