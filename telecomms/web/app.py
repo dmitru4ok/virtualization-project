@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash
-from helpers import find_user_in_db, get_vm_data
-from onevm import get_nebula_oneadmin_templates
+from helpers import find_user_in_db, get_vm_data, add_vm, users, vms
+import onevm
 
 app = Flask(__name__)
 app.secret_key = "Something secret!"
@@ -18,7 +18,6 @@ def view_vm_list():
         user_data = find_user_in_db(username)
         if user_data is not None:
             users_vms_data = get_vm_data(user_data["vm_ids"]) # query our db
-        
             return render_template('vms.html', user_data=user_data, vmlist=users_vms_data)
         
     return redirect(url_for('login'))
@@ -29,8 +28,8 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
         user = find_user_in_db(username)
+
         if user is not None and user["password"] == password:
             session['username'] = username
             return redirect(url_for('view_vm_list'))
@@ -47,11 +46,15 @@ def create():
         username = session['username']
         user_data = find_user_in_db(username)
         if user_data: 
-            templates = get_nebula_oneadmin_templates()
+            templates = onevm.get_nebula_oneadmin_templates()
             if request.method == 'GET':
                 return render_template("create.html", templates=templates, user_data=user_data)
             
             # CREATE VM LOGIC HERE
+            template_id = int(request.form["template"])
+            vm_name = request.form["vm_name"]
+            res_id = onevm.instantiate_vm(template_id, vm_name)
+            add_vm(user_data["login"], res_id)
             return redirect(url_for("view_vm_list"))
     
         return redirect(url_for("login"))

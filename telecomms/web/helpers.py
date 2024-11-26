@@ -30,3 +30,9 @@ def get_vm_data(vm_ids: list[int]):
         return [vm for vm in vms if vm["id"] in vm_ids]
 
     return None
+
+def add_vm(login, vm_id):
+    new_vm_id = vms[-1]["id"] + 1
+    vms.append({"id": new_vm_id, "open_nebula_id": vm_id})
+    usr = find_user_in_db(login)
+    usr["vm_ids"].append(new_vm_id)

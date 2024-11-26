@@ -10,7 +10,7 @@ one = pyone.OneServer("https://grid5.mif.vu.lt/cloud3/RPC2", session=f"{ON_uname
 
 def get_nebula_oneadmin_templates():
     result = []
-    
+
     # 0 for ondeadmin, 0 for offset, -1 for no limit
     templates = one.templatepool.info(0, 0, -1).VMTEMPLATE 
     for t in templates:
@@ -24,3 +24,7 @@ def get_nebula_oneadmin_templates():
     result.sort(key=lambda x: x["NAME"])
     return result
 
+def instantiate_vm(template, name):
+    res = one.template.instantiate(template, name)
+    return res
+    
