@@ -8,37 +8,7 @@
       ansible.builtin.pip:
         name: pyone==6.10.0 # crashes without version 
         state: present
-
-    - name: Instantiate webserver templated VM
-      community.general.one_vm:
-        api_url: https://grid5.mif.vu.lt/cloud3/RPC2
-        template_id: 1737
-        disk_size: 8 GB
-        memory: 1024 MB
-        attributes:
-          name: webserver-vm
-        state: present
-      environment:
-        ONE_AUTH: /root/auth/webserver_auth
-      register: webres
-
-    - debug:
-        msg: "Webserver IP: {{ webres.instances[0].networks[0].ip }}"
-
-    - name: Instantiate database templated VM
-      community.general.one_vm:
-        api_url: https://grid5.mif.vu.lt/cloud3/RPC2
-        template_id: 2646
-        attributes:
-          name: db-vm
-        state: present
-      environment:
-        ONE_AUTH: /root/auth/db_auth
-      register: dbres
-
-    - debug:
-        msg: "Database IP: {{ dbres.instances[0].networks[0].ip }}"
-
+        
     - name: Instantiate client templated VM
       community.general.one_vm:
         api_url: https://grid5.mif.vu.lt/cloud3/RPC2
@@ -57,12 +27,6 @@
       ansible.builtin.blockinfile:
         path: /etc/ansible/hosts
         block: |
-          [webserver]
-          {{ webres.instances[0].networks[0].ip }}
-
-          [db]
-          {{ dbres.instances[0].networks[0].ip }}
-
           [client]
           {{ clientres.instances[0].networks[0].ip }}
 
