@@ -1,14 +1,14 @@
 # THIS SHOULD BE IN DB
 users = [
     #example data
-    # {"login": "user1", "password": "passof1"},
-    # {"login": "user2", "password": "passof2"}
+    {"login": "user1", "password": "passof1"},
+    {"login": "user2", "password": "passof2"}
 ]
 
 
 vms = [
-    # example only. Populate with some existing VM ids of 
-    # your acc if you wish. 
+    # example data only. Populate with some existing VM ids of 
+    # your acc if you wish them to be displayed in user's account. 
     # {"user_login": "user1", "open_nebula_id": 74005},
 ]
 

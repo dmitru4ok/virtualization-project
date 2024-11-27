@@ -6,6 +6,8 @@ from os import getenv
 load_dotenv()
 ON_uname = getenv("ON_LOGIN")
 ON_pass = getenv("ON_PASS")
+if ON_uname is None or ON_pass is None:
+    raise ConnectionRefusedError("NO CREDENTIALS IN ENVIRONMENT VARIABLES (watch .env.example file)")
 one = pyone.OneServer("https://grid5.mif.vu.lt/cloud3/RPC2", session=f"{ON_uname}:{ON_pass}")
 STATE = ["INIT", "PENDING", "HOLD", "RUNNING", 
          "STOPPED", "SUSPENDED", "DONE", "FAILED", "POWEROFF", 

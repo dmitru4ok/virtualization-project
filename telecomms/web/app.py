@@ -24,7 +24,7 @@ def view_vm_list():
             else:
                 full_vm_info = []
             return render_template('vms.html', vmlist=full_vm_info, user_data=user_data)
-        raise NameError(MESSAGE)
+        return redirect(url_for('logout'))
     return redirect(url_for('login'))
 
 
@@ -64,7 +64,7 @@ def create():
                 if res_id:
                     add_vm(user_data["login"], res_id)
             return redirect(url_for("view_vm_list"))
-        raise NameError(MESSAGE)
+        return redirect(url_for('logout'))
     return redirect(url_for("login"))
 
 
@@ -76,7 +76,7 @@ def manage_vm(vm_id):
         if user_data is not None:
             vm_info = onevm.fetch_vm_by_id(vm_id)
             return render_template("vminfo.html", vm_info=vm_info)
-        raise NameError(MESSAGE)
+        return redirect(url_for('logout'))
     return redirect(url_for('login'))
 
 
@@ -94,6 +94,8 @@ def manage_vm_action(id, action):
             except Exception as e:
                 print(e)
                 return redirect(url_for('manage_vm', vm_id=id))
+
+        return redirect(url_for('logout'))
     return redirect(url_for('login'))
 
     
