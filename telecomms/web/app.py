@@ -1,10 +1,10 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash
-from helpers import find_user_in_db, get_vm_data, add_vm
+from db import find_user_in_db, get_vm_data, add_vm, remove_vm
 import onevm
 
 app = Flask(__name__)
 app.secret_key = "Something secret!"
-
+MESSAGE = "No user in the database"
 
 
 @app.route("/")
@@ -23,8 +23,8 @@ def view_vm_list():
                 full_vm_info = [vm for vm in all_vms_data if vm["ID"] in users_vms_ids]
             else:
                 full_vm_info = []
-            return render_template('vms.html', vmlist=full_vm_info)
-        
+            return render_template('vms.html', vmlist=full_vm_info, user_data=user_data)
+        raise NameError(MESSAGE)
     return redirect(url_for('login'))
 
 
@@ -64,25 +64,38 @@ def create():
                 if res_id:
                     add_vm(user_data["login"], res_id)
             return redirect(url_for("view_vm_list"))
-    
-        return redirect(url_for("login"))
+        raise NameError(MESSAGE)
+    return redirect(url_for("login"))
 
 
-@app.route('/vm/<int:vm_id>', methods=['GET', 'POST', 'DELETE'])
+@app.route('/vm/<int:vm_id>', methods=['GET'])
 def manage_vm(vm_id):
     if 'username' in session:
         username = session['username']
         user_data = find_user_in_db(username)
         if user_data is not None:
-            if request.method == 'GET':
-                vm_info = onevm.fetch_vm_by_id(vm_id)
-                return render_template("vminfo.html", vm_info=vm_info)
-            elif request.method == 'DELETE':
-                pass  # delete
-            else:
-                pass  # post
-        raise NameError("No user in the database")
+            vm_info = onevm.fetch_vm_by_id(vm_id)
+            return render_template("vminfo.html", vm_info=vm_info)
+        raise NameError(MESSAGE)
     return redirect(url_for('login'))
+
+
+@app.route('/vm/<int:id>/<action>', methods=['POST'])
+def manage_vm_action(id, action):
+    if 'username' in session:
+        username = session['username']
+        user_data = find_user_in_db(username)
+        if user_data is not None:
+            try:
+                res = onevm.perform_vm_action(id, action)
+                if res and action == 'shutdown-hard':
+                    remove_vm(res)
+                return redirect(url_for('view_vm_list'))
+            except Exception as e:
+                print(e)
+                return redirect(url_for('manage_vm', vm_id=id))
+    return redirect(url_for('login'))
+
     
 
 @app.route('/logout')

@@ -59,3 +59,7 @@ def fetch_vm_by_id(id):
     }
     return value
     
+
+def perform_vm_action(vm_id, action):
+    res = one.vm.action(action, vm_id)
+    return res

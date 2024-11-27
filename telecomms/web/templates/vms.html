@@ -2,7 +2,7 @@
 
 {% block title %}Your Virtual Machines{% endblock %}
 {% block content %}
-    <h4>Your VMs</h4>
+    <h4>{{user_data["login"]}}, these are your VMs</h4>
     {% if vmlist | length > 0 %}
     <ol>
         {% for vm in vmlist %}
@@ -16,6 +16,6 @@
         {% endfor %}
     </ol>
     {% else %}
-        <p>No VMs yet... <a href={{url_for('create')}}>Create one now!</a></p>
+        <p>Oops, no VMs yet... <a href={{url_for('create')}}>Create one now!</a></p>
     {% endif %}
 {% endblock %}
