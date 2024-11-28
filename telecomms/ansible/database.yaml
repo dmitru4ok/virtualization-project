@@ -1,5 +1,6 @@
 ---
-- hosts: db
+- name: Creating Dokcer psql server and linux client
+  hosts: db
   become: true
   vars:
     container_count: 1
