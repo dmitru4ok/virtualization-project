@@ -27,7 +27,8 @@
     - name: Instantiate database templated VM
       community.general.one_vm:
         api_url: https://grid5.mif.vu.lt/cloud3/RPC2
-        template_id: 2646
+        template_id: 1737
+        disk_size: 10 GB
         attributes:
           name: db-vm
         state: present
