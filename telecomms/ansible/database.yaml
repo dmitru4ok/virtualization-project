@@ -1,8 +1,11 @@
 ---
-- name: Install PostgreSQL
-  hosts: db
-  gather_facts: true  # Please keep it this way, need it for {{ ansible_distribution_release }}
+- hosts: db
   become: true
+  vars:
+    container_count: 1
+    default_container_name: postgres-server
+    default_container_image: postgres
+
   tasks:
     - name: packages | ensure apt list dir exists
       file:
@@ -10,27 +13,79 @@
         state: directory
         mode: 0755
 
-    - name: Update apt cache
+    - name: Install aptitude
       apt:
-        update_cache: yes
+        name: aptitude
+        state: latest
+        update_cache: true
 
-    - name: Ensure gpg is installed
+    - name: Install required system packages
       apt:
-        name: gnupg
-        state: present
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - postgresql-client
+        state: latest
+        update_cache: true
 
-    - name: Add pgdg repo to sources.list.d
-      lineinfile:
-        path: /etc/apt/sources.list.d/pgdg.lts
-        line: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
-        create: true
-
-    - name: Download PostgreSQL key and add it to system keyring
+    - name: Add Docker GPG apt Key
       apt_key:
-        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
-    - name: Install PostgreSQL
-      apt:
-        name: postgresql
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
         state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Pull Postgres Docker image
+      community.docker.docker_image:
+        name: "{{ default_container_image }}"
+        source: pull
+
+    - name: Create postgres container(s)
+      community.docker.docker_container:
+        name: "{{ default_container_name }}"
+        image: "{{ default_container_image }}"
+        state: present
+        env:
+          POSTGRES_PASSWORD: tele
+          POSTGRES_USER: postgres
+          POSTGRES_DB: "closednebula"
+        ports:
+          - "5432:5432"
+
+    - name: Ensure postgres container is started
+      community.docker.docker_container:
+        name: "{{ default_container_name }}"
+        state: started
+
+    - name: Pause for 10 seconds to ensure the container is fully up
+      pause:
+        seconds: 10
+
+    - name: Copy database setup script to remote host
+      ansible.builtin.copy:
+        src: database_setup.sh
+        dest: /tmp/database_setup.sh
+        mode: '0755'
+
+    - name: Execute database setup script
+      ansible.builtin.shell: /tmp/database_setup.sh
+      args:
+        executable: /bin/bash
