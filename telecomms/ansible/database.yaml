@@ -65,7 +65,7 @@
         image: "{{ default_container_image }}"
         state: present
         env:
-          POSTGRES_PASSWORD: tele
+          POSTGRES_PASSWORD: admin01
           POSTGRES_USER: postgres
           POSTGRES_DB: "closednebula"
         ports:
