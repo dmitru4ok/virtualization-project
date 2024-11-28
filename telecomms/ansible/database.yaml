@@ -1,5 +1,5 @@
 ---
-- name: Creating Dokcer psql server and linux client
+- name: Creating Docker psql server and linux client
   hosts: db
   become: true
   vars:
