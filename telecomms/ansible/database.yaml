@@ -82,7 +82,7 @@
 
     - name: Copy database setup script to remote host
       ansible.builtin.copy:
-        src: database_setup.sh
+        src: ../shell/database_setup.sh
         dest: /tmp/database_setup.sh
         mode: '0755'
 
