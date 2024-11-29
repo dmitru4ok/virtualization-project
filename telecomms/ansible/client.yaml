@@ -41,6 +41,7 @@
         mkdir -p /run/user/$(id -u)
         chown $(id -u):$(id -g) /run/user/$(id -u)
       become: false
+      
     - name: Ensure environment setup for Weston
       file:
         path: "/run/user/{{ ansible_user }}"

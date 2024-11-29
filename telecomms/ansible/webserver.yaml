@@ -42,7 +42,7 @@
     
       - name: add docker repository
         ansible.builtin.apt_repository:
-          repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian stable"
+          repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
           state: present
           filename: docker
     
