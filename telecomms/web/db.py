@@ -10,10 +10,10 @@ load_dotenv()
 # Establish the database connection
 def get_db_connection():
     conn = psycopg2.connect(
-        host=os.getenv("ON_HOST"),
-        dbname=os.getenv("ON_NAME"),
-        user=os.getenv("ON_USER"),
-        password=os.getenv("ON_PASSWORD")
+        host=os.getenv("DB_HOST"),
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD")
     )
     return conn
 
