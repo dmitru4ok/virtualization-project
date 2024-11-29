@@ -85,8 +85,8 @@
             - 5000:5000
           env:
             ON_LOGIN: "{{on_login}}"
-          ON_PASS: "{{on_pass}}"
-          DB_USER: "{{ POSTGRES_USER }}"
-          DB_PASSWORD: "{{ POSTGRES_PASSWORD }}"
-          DB_NAME: "{{ POSTGRES_DB }}"
-          DB_HOST: "{{ db_ip }}"
+            ON_PASS: "{{on_pass}}"
+            DB_USER: "{{ POSTGRES_USER }}"
+            DB_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+            DB_NAME: "{{ POSTGRES_DB }}"
+            DB_HOST: "{{ db_ip }}"
