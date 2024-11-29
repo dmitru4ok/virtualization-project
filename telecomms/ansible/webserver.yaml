@@ -1,85 +1,92 @@
 ---
-- name: Configure webserver VM
-  gather_facts: no
-  become: yes
-  hosts: webserver
-  tasks:
-    - name: create lock dir
-      file:
-        path: /var/lib/apt/lists
-        state: directory
-
-    - name: update
-      apt:
-        update_cache: yes
-
-    - name: upgrade
-      apt:
-        upgrade: true
+  - name: Configure webserver VM
+    gather_facts: no
+    become: yes
+    hosts: webserver
+    vars_files:
+      - db_credentials.yaml
   
-    - name: Install prerequisites for Docker
-      apt:
-        name:
-          - ca-certificates
-          - curl
-        state: present
-        update_cache: yes
-    
-    - name: Create Docker keyrings directory
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
-
-    - name: Download Docker GPG key
-      ansible.builtin.get_url:
-        url: https://download.docker.com/linux/debian/gpg
-        dest: /etc/apt/keyrings/docker.asc
-        mode: '0644'
-
-    - name: add docker repository
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
-        state: present
-        filename: docker
-    
-    - name: install docker packages
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - python3-requests
-        state: present
-      
-    - name: Ensure Docker runs
-      systemd:
-        name: docker
-        state: started
-        enabled: yes
-
-    - name: Create project web folder
-      file:
-        path: ~/web
-        state: directory
-        mode: '0755'
-
-    - name: copy web folder from ansible to webserver
-      ansible.builtin.copy:
-        src: ~/virtualization-project/telecomms/web/
-        dest: ~/web
-    
-    - name: build container
-      command: docker build -t telecomm_provider .
-      args:
-        chdir: ~/web
-
-    - name: run container
-      docker_container:
-        image: telecomm_provider
-        name: provider_app
-        ports: 
-          - 5000:5000
-        env:
-          ON_LOGIN: "{{on_login}}"
+    tasks:
+      - name: create lock dir
+        file:
+          path: /var/lib/apt/lists
+          state: directory
+  
+      - name: update
+        apt:
+          update_cache: yes
+  
+      - name: upgrade
+        apt:
+          upgrade: true
+  
+      - name: Install prerequisites for Docker
+        apt:
+          name:
+            - ca-certificates
+            - curl
+          state: present
+          update_cache: yes
+  
+      - name: Create Docker keyrings directory
+        file:
+          path: /etc/apt/keyrings
+          state: directory
+          mode: '0755'
+  
+      - name: Download Docker GPG key
+        ansible.builtin.get_url:
+          url: https://download.docker.com/linux/debian/gpg
+          dest: /etc/apt/keyrings/docker.asc
+          mode: '0644'
+  
+      - name: add docker repository
+        ansible.builtin.apt_repository:
+          repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.dock>
+          state: present
+          filename: docker
+  
+      - name: install docker packages
+        apt:
+          name:
+            - docker-ce
+            - docker-ce-cli
+            - containerd.io
+            - python3-requests
+          state: present
+  
+      - name: Ensure Docker runs
+        systemd:
+          name: docker
+          state: started
+          enabled: yes
+  
+      - name: Create project web folder
+        file:
+          path: ~/web
+          state: directory
+          mode: '0755'
+  
+      - name: copy web folder from ansible to webserver
+        ansible.builtin.copy:
+          src: ~/virtualization-project/telecomms/web/
+          dest: ~/web
+  
+      - name: build container
+        command: docker build -t telecomm_provider .
+        args:
+          chdir: ~/web
+  
+      - name: run container
+        docker_container:
+          image: telecomm_provider
+          name: provider_app
+          ports:
+            - 5000:5000
+          env:
+            ON_LOGIN: "{{on_login}}"
           ON_PASS: "{{on_pass}}"
+          DB_USER: "{{ POSTGRES_USER }}"
+          DB_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+          DB_NAME: "{{ POSTGRES_DB }}"
+          DB_HOST: "{{ db_ip }}"

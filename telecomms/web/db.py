@@ -1,34 +1,72 @@
-# THIS SHOULD BE IN DB
-users = [
-    #example data
-    {"login": "user1", "password": "passof1"},
-    {"login": "user2", "password": "passof2"}
-]
+import psycopg2
+from psycopg2 import sql
 
+from dotenv import load_dotenv
+import os
 
-vms = [
-    # example data only. Populate with some existing VM ids of 
-    # your acc if you wish them to be displayed in user's account. 
-    # {"user_login": "user1", "open_nebula_id": 74005},
-]
+# Load environment variables from .env file
+load_dotenv()
 
-# THESE SHOULD BE DB CALLS
+# Establish the database connection
+def get_db_connection():
+    conn = psycopg2.connect(
+        host=os.getenv("ON_HOST"),
+        dbname=os.getenv("ON_NAME"),
+        user=os.getenv("ON_USER"),
+        password=os.getenv("ON_PASSWORD")
+    )
+    return conn
+
+# Find user in the database
 def find_user_in_db(login):
-    for usr in users:
-        if usr["login"] == login:
-            return usr
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    query = sql.SQL("SELECT * FROM users WHERE login = %s")
+    cur.execute(query, (login,))
+    user = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if user:
+        return {"login": user[0], "password": user[1]}  # Assuming the first column is login>
     return None
 
+# Get VM data from the database for a given user
 def get_vm_data(user: dict[str, str]):
-    return [vm["open_nebula_id"] for vm in vms if vm["user_login"] == user["login"]]
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    query = sql.SQL("SELECT open_nebula_id FROM vms WHERE user_login = %s")
+    cur.execute(query, (user["login"],))
+    vm_data = cur.fetchall()
 
+    cur.close()
+    conn.close()
+
+    return [vm[0] for vm in vm_data]  # Returning list of VM IDs
+
+# Add a VM to the database
 def add_vm(login, vm_id):
-    vms.append({"user_login": login, "open_nebula_id": vm_id})
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    query = sql.SQL("INSERT INTO vms (user_login, open_nebula_id) VALUES (%s, %s)")
+    cur.execute(query, (login, vm_id))
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+# Remove a VM from the database
 def remove_vm(vm_id):
-    for index, machine in  enumerate(vms):
-        if machine["open_nebula_id"] == vm_id:
-            vms.pop(index)
-            return
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    query = sql.SQL("DELETE FROM vms WHERE open_nebula_id = %s")
+    cur.execute(query, (vm_id,))
+    conn.commit()
+
+    cur.close()
+    conn.close()

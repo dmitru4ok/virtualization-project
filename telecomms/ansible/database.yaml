@@ -1,43 +1,45 @@
 ---
-- name: Creating Docker psql server and linux client
-  hosts: db
-  become: true
-  vars:
-    container_count: 1
-    default_container_name: postgres-server
-    default_container_image: postgres
-
-  tasks:
-    - name: packages | ensure apt list dir exists
-      file:
-        path: /var/lib/apt/lists/
-        state: directory
-        mode: 0755
-
-    - name: Install required system packages
-      apt:
-        pkg:
-          - aptitude
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - software-properties-common
-          - python3-pip
-          - virtualenv
-          - python3-setuptools
-          - postgresql-client
-        state: latest
-        update_cache: true
-
-    - name: Add Docker GPG apt Key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add Docker Repository
-      apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu focal stable
-        state: present
+  - name: Creating Docker psql server and linux client
+    hosts: db
+    become: true
+    vars_files:
+      - db_credentials.yaml
+    vars:
+      container_count: 1
+      default_container_name: postgres-server
+      default_container_image: postgres
+  
+    tasks:
+      - name: packages | ensure apt list dir exists
+        file:
+          path: /var/lib/apt/lists/
+          state: directory
+          mode: 0755
+  
+      - name: Install required system packages
+        apt:
+          pkg:
+            - aptitude
+            - apt-transport-https
+            - ca-certificates
+            - curl
+            - software-properties-common
+            - python3-pip
+            - virtualenv
+            - python3-setuptools
+            - postgresql-client
+          state: latest
+          update_cache: true
+  
+      - name: Add Docker GPG apt Key
+        apt_key:
+          url: https://download.docker.com/linux/ubuntu/gpg
+          state: present
+  
+      - name: Add Docker Repository
+        apt_repository:
+          repo: deb https://download.docker.com/linux/ubuntu focal stable
+          state: present
 
     - name: Update apt and install docker-ce
       apt:
@@ -60,9 +62,9 @@
         image: "{{ default_container_image }}"
         state: present
         env:
-          POSTGRES_PASSWORD: admin01
-          POSTGRES_USER: postgres
-          POSTGRES_DB: "closednebula"
+          POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+          POSTGRES_USER: "{{ POSTGRES_USER }}"
+          POSTGRES_DB: "{{ POSTGRES_DB }}"
         ports:
           - "5432:5432"
 
@@ -79,7 +81,7 @@
       ansible.builtin.copy:
         src: ../shell/database_setup.sh
         dest: /tmp/database_setup.sh
-        mode: '0755'
+        mode: '0755''
 
     - name: Execute database setup script
       ansible.builtin.shell: /tmp/database_setup.sh
