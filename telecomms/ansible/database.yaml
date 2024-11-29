@@ -41,49 +41,49 @@
           repo: deb https://download.docker.com/linux/ubuntu focal stable
           state: present
 
-    - name: Update apt and install docker-ce
-      apt:
-        name: docker-ce
-        state: latest
-        update_cache: true
-
-    - name: Install Docker Module for Python
-      pip:
-        name: docker
-
-    - name: Pull Postgres Docker image
-      community.docker.docker_image:
-        name: "{{ default_container_image }}"
-        source: pull
-
-    - name: Create postgres container(s)
-      community.docker.docker_container:
-        name: "{{ default_container_name }}"
-        image: "{{ default_container_image }}"
-        state: present
-        env:
-          POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
-          POSTGRES_USER: "{{ POSTGRES_USER }}"
-          POSTGRES_DB: "{{ POSTGRES_DB }}"
-        ports:
-          - "5432:5432"
-
-    - name: Ensure postgres container is started
-      community.docker.docker_container:
-        name: "{{ default_container_name }}"
-        state: started
-
-    - name: Pause for 10 seconds to ensure the container is fully up
-      pause:
-        seconds: 10
-
-    - name: Copy database setup script to remote host
-      ansible.builtin.copy:
-        src: ../shell/database_setup.sh
-        dest: /tmp/database_setup.sh
-        mode: '0755''
-
-    - name: Execute database setup script
-      ansible.builtin.shell: /tmp/database_setup.sh
-      args:
-        executable: /bin/bash
+      - name: Update apt and install docker-ce
+        apt:
+          name: docker-ce
+          state: latest
+          update_cache: true
+  
+      - name: Install Docker Module for Python
+        pip:
+          name: docker
+  
+      - name: Pull Postgres Docker image
+        community.docker.docker_image:
+          name: "{{ default_container_image }}"
+          source: pull
+  
+      - name: Create postgres container(s)
+        community.docker.docker_container:
+          name: "{{ default_container_name }}"
+          image: "{{ default_container_image }}"
+          state: present
+          env:
+            POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+            POSTGRES_USER: "{{ POSTGRES_USER }}"
+            POSTGRES_DB: "{{ POSTGRES_DB }}"
+          ports:
+            - "5432:5432"
+  
+      - name: Ensure postgres container is started
+        community.docker.docker_container:
+          name: "{{ default_container_name }}"
+          state: started
+  
+      - name: Pause for 10 seconds to ensure the container is fully up
+        pause:
+          seconds: 10
+  
+      - name: Copy database setup script to remote host
+        ansible.builtin.copy:
+          src: ../shell/database_setup.sh
+          dest: /tmp/database_setup.sh
+          mode: '0755'
+  
+      - name: Execute database setup script
+        ansible.builtin.shell: /tmp/database_setup.sh
+        args:
+          executable: /bin/bash
