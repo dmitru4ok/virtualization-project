@@ -58,8 +58,11 @@ def create():
             # CREATE VM LOGIC HERE
             template_id = int(request.form["template"])
             vm_name = request.form["vm_name"]
+            res_id = None
             try:
                 res_id = onevm.instantiate_vm(template_id, vm_name)
+            except onevm.pyone.OneException:
+                flash("Error happened!", 'danger')
             finally:
                 if res_id:
                     add_vm(user_data["login"], res_id)
