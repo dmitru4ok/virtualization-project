@@ -24,6 +24,7 @@ mkdir -p /root/auth
 echo "$WEBSERVER_VM_UNAME:$WEBSERVER_VM_PASS" > /root/auth/webserver_auth
 echo "$DB_VM_UNAME:$DB_VM_PASS" > /root/auth/db_auth
 echo "$CLIENT_VM_UNAME:$CLIENT_VM_PASS" > /root/auth/client_auth
+echo ${VM_PASS} > vault-pass.txt
 # -------
 
 sudo apt update
@@ -45,6 +46,17 @@ WEBSERVER_PRIVATE_IP=$(awk '/\[webserver\]/ {getline; print}' /etc/ansible/hosts
 DB_PRIVATE_IP=$(awk '/\[db\]/ {getline; print}' /etc/ansible/hosts)
 CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
+ansible-vault decrypt credentials.yaml --vault-password-file vault-pass.txt
+echo "vm_pass: ${VM_PASS}" >> credentials.yaml
+echo "db_vm_username: ${DB_VM_UNAME}" >> credentials.yaml
+echo "db_ip: ${DB_PRIVATE_IP}" >> vault-pass.txt
+echo "webserver_vm_uname: ${WEBSERVER_VM_UNAME}" >> credentials.yaml
+echo "webserver_vm_pass: ${WEBSERVER_VM_PASS}" >> credentials.yaml
+echo "client_vm_uname: ${CLIENT_VM_UNAME}" >> credentials.yaml
+ansible-vault encrypt credentials.yaml --vault-password-file credentials.yaml
+
+
+
 # sometimes require time even after the instantiation playbook
 sleep 15
 
@@ -59,9 +71,9 @@ sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $CLIENT_VM_UNAME@$CL
 
 # can safely execute ansible playbooks here, for example:
 # REFACTOR --extra-vars into inventory files (encrypt with vault)
-ansible-playbook ../ansible/database.yaml --extra-vars "ansible_become_pass=$VM_PASS ansible_user=$DB_VM_UNAME"
-ansible-playbook ../ansible/webserver.yaml --extra-vars "ansible_become_pass=$VM_PASS ansible_user=$WEBSERVER_VM_UNAME on_pass=$WEBSERVER_VM_PASS on_login=$WEBSERVER_VM_UNAME db_ip=$DB_PRIVATE_IP"
-ansible-playbook ../ansible/client.yaml --extra-vars "ansible_become_pass=$VM_PASS ansible_user=$CLIENT_VM_UNAME"
+ansible-playbook ../ansible/database.yaml --vault-password-file vault-pass.txt
+ansible-playbook ../ansible/webserver.yaml --vault-password-file vault-pass.txt
+ansible-playbook ../ansible/client.yaml --vault-password-file vault-pass.txt
 
 
 ENDPOINT=https://grid5.mif.vu.lt/cloud3/RPC2
@@ -77,3 +89,6 @@ echo "-----------------------------------------"
 echo "WEBAPP DEPLOYED"
 echo "ACCESSIBLE AT: http://${PUBLIC_IP}:${PORT}"
 echo "-----------------------------------------"
+
+rm vault-pass.txt
+rm ${VMID}.txt

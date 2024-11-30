@@ -3,11 +3,11 @@
     hosts: db
     become: true
     vars_files:
-      - db_credentials.yaml
+      - credentials.yaml
     vars:
-      container_count: 1
       default_container_name: postgres-server
       default_container_image: postgres
+      ansible_user: "{{ db_vm_username }}"
   
     tasks:
       - name: packages | ensure apt list dir exists
@@ -56,7 +56,7 @@
           name: "{{ default_container_image }}"
           source: pull
   
-      - name: Create postgres container(s)
+      - name: Create postgres container
         community.docker.docker_container:
           name: "{{ default_container_name }}"
           image: "{{ default_container_image }}"

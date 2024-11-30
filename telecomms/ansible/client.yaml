@@ -2,7 +2,11 @@
 - name: Setup Wayland and Google Chrome
   hosts: client
   become: true
-
+  vars_files:
+      - credentials.yaml
+  vars:
+    ansible_user: "{{ client_vm_uname }}"
+  
   tasks:
     - name: Ensure /var/lib/apt/lists/ directory exists
       file:

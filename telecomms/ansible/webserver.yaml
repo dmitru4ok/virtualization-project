@@ -5,6 +5,10 @@
     hosts: webserver
     vars_files:
       - db_credentials.yaml
+    vars:
+      container_name: provider_app
+      img_name: telecomm_provider
+      ansible_user: "{{ webserver_vm_username }}"
 
     tasks:
       - name: create lock dir
@@ -73,20 +77,22 @@
           dest: ~/web
       
       - name: build container
-        command: docker build -t telecomm_provider .
-        args:
-          chdir: ~/web
-  
-      - name: run container
-        docker_container:
-          image: telecomm_provider
-          name: provider_app
-          ports: 
-            - 5000:5000
+        community.docker.docker_container:
+          name: "{{ container_name }}"
+          image: "{{ img_name }}"
+          state: present
           env:
-            ON_LOGIN: "{{on_login}}"
-            ON_PASS: "{{on_pass}}"
+            ON_LOGIN: "{{ webserver_vm_uname }}"
+            ON_PASS: "{{ webserver_vm_on_pass }}"
             DB_USER: "{{ POSTGRES_USER }}"
             DB_PASSWORD: "{{ POSTGRES_PASSWORD }}"
             DB_NAME: "{{ POSTGRES_DB }}"
             DB_HOST: "{{ db_ip }}"
+          ports:
+            - "5432:5432"
+  
+      - name: run container
+        community.docker.docker_container:
+          image: telecomm_provider
+          name: "{{ container_name }}"
+          state: started
