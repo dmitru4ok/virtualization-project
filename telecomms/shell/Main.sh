@@ -46,14 +46,14 @@ WEBSERVER_PRIVATE_IP=$(awk '/\[webserver\]/ {getline; print}' /etc/ansible/hosts
 DB_PRIVATE_IP=$(awk '/\[db\]/ {getline; print}' /etc/ansible/hosts)
 CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
-ansible-vault decrypt credentials.yaml --vault-password-file vault-pass.txt
-echo "vm_pass: ${VM_PASS}" >> credentials.yaml
-echo "db_vm_username: ${DB_VM_UNAME}" >> credentials.yaml
+ansible-vault decrypt ../misc/credentials.yaml --vault-password-file vault-pass.txt
+echo "vm_pass: ${VM_PASS}" >> ../misc/credentials.yaml
+echo "db_vm_username: ${DB_VM_UNAME}" >> ../misc/credentials.yaml
 echo "db_ip: ${DB_PRIVATE_IP}" >> vault-pass.txt
-echo "webserver_vm_uname: ${WEBSERVER_VM_UNAME}" >> credentials.yaml
-echo "webserver_vm_pass: ${WEBSERVER_VM_PASS}" >> credentials.yaml
-echo "client_vm_uname: ${CLIENT_VM_UNAME}" >> credentials.yaml
-ansible-vault encrypt credentials.yaml --vault-password-file credentials.yaml
+echo "webserver_vm_uname: ${WEBSERVER_VM_UNAME}" >> ../misc/credentials.yaml
+echo "webserver_vm_pass: ${WEBSERVER_VM_PASS}" >> ../misc/credentials.yaml
+echo "client_vm_uname: ${CLIENT_VM_UNAME}" >> ../misc/credentials.yaml
+ansible-vault encrypt ../misc/credentials.yaml --vault-password-file vault-pass.txt
 
 
 
