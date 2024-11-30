@@ -96,4 +96,4 @@
             DB_NAME: "{{ POSTGRES_DB }}"
             DB_HOST: "{{ db_ip }}"
           ports:
-            - "5432:5432"
+            - "5000:5000"
