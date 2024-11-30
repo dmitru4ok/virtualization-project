@@ -58,7 +58,7 @@ sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $CLIENT_VM_UNAME@$CL
 
 
 ansible-playbook ../ansible/database.yaml --vault-id db@db_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS"
-ansible-playbook ../ansible/webserver.yaml --vault-id webserver@webserver_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS db_ip=$DB_PRIVATE_IP"
+ansible-playbook ../ansible/webserver.yaml --vault-id ws@webserver_vault_auth.txt --vault-id db@db_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS db_ip=$DB_PRIVATE_IP"
 ansible-playbook ../ansible/client.yaml --vault-id client@client_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS"
 
 
