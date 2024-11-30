@@ -51,7 +51,7 @@ echo "ansible_become_pass: ${VM_PASS}" >> ../misc/credentials.yaml
 echo "db_vm_username: ${DB_VM_UNAME}" >> ../misc/credentials.yaml
 echo "db_ip: ${DB_PRIVATE_IP}" >> ../misc/credentials.yaml
 echo "webserver_vm_username: ${WEBSERVER_VM_UNAME}" >> ../misc/credentials.yaml
-echo "webserver_vm_pass: ${WEBSERVER_VM_PASS}" >> ../misc/credentials.yaml
+echo "webserver_vm_on_pass: ${WEBSERVER_VM_PASS}" >> ../misc/credentials.yaml
 echo "client_vm_username: ${CLIENT_VM_UNAME}" >> ../misc/credentials.yaml
 ansible-vault encrypt ../misc/credentials.yaml --vault-password-file vault-pass.txt
 
