@@ -1,5 +1,5 @@
 ---
-  - name: Creating Docker psql server and linux client
+  - name: Configure db VM
     hosts: db
     become: true
     vars_files:

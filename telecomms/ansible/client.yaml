@@ -5,7 +5,7 @@
   vars_files:
       - ../misc/credentials.yaml
   vars:
-    ansible_user: "{{ client_vm_uname }}"
+    ansible_user: "{{ client_vm_username }}"
   
   tasks:
     - name: Ensure /var/lib/apt/lists/ directory exists

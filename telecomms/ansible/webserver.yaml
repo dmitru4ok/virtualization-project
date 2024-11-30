@@ -82,7 +82,7 @@
           image: "{{ img_name }}"
           state: present
           env:
-            ON_LOGIN: "{{ webserver_vm_uname }}"
+            ON_LOGIN: "{{ webserver_vm_username }}"
             ON_PASS: "{{ webserver_vm_on_pass }}"
             DB_USER: "{{ POSTGRES_USER }}"
             DB_PASSWORD: "{{ POSTGRES_PASSWORD }}"
