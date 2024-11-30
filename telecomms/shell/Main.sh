@@ -34,7 +34,7 @@ ansible-playbook ../ansible/instantiate.yaml --vault-id ws@webserver_vault_auth.
 
 # for setting up passwordless ssh
 echo "Extracting OpenNebula logins credentials into Main.sh"
-WEBSERVER_VM_UNAME=$(ansible-vault view ../misc/ON_webserver.yaml --vault-id webserver@webserver_vault_auth.txt | grep webserver_vm_username | cut -d ":" -f 2 | tr -d " ")
+WEBSERVER_VM_UNAME=$(ansible-vault view ../misc/ON_webserver.yaml --vault-id ws@webserver_vault_auth.txt | grep webserver_vm_username | cut -d ":" -f 2 | tr -d " ")
 DB_VM_UNAME=$(ansible-vault view ../misc/ON_db.yaml --vault-id db@db_vault_auth.txt | grep db_vm_username | cut -d ":" -f 2 | tr -d " ")
 CLIENT_VM_UNAME=$(ansible-vault view ../misc/ON_client.yaml --vault-id client@client_vault_auth.txt | grep client_vm_username | cut -d ":" -f 2 | tr -d " ")
 
@@ -44,7 +44,7 @@ CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
 
 # for creating Opennebula client on the backend
-WEBSERVER_VM_PASS=$(ansible-vault view ../misc/ON_webserver.yaml --vault-id webserver@webserver_vault_auth.txt | grep webserver_vm_password | cut -d ":" -f 2 | tr -d " ")
+WEBSERVER_VM_PASS=$(ansible-vault view ../misc/ON_webserver.yaml --vault-id ws@webserver_vault_auth.txt | grep webserver_vm_password | cut -d ":" -f 2 | tr -d " ")
 
 # sometimes require time even after the state is "present" in the playbook
 sleep 15
@@ -58,7 +58,7 @@ sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $CLIENT_VM_UNAME@$CL
 
 
 ansible-playbook ../ansible/database.yaml --vault-id db@db_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS"
-ansible-playbook ../ansible/webserver.yaml --vault_id webserver@webserver_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS db_ip=$DB_PRIVATE_IP"
+ansible-playbook ../ansible/webserver.yaml --vault-id webserver@webserver_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS db_ip=$DB_PRIVATE_IP"
 ansible-playbook ../ansible/client.yaml --vault-id client@client_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS"
 
 
@@ -76,8 +76,4 @@ echo "WEBAPP DEPLOYED"
 echo "ACCESSIBLE AT: http://${PUBLIC_IP}:${PORT}"
 echo "-----------------------------------------"
 
-rm vm-sudo-pass.txt
-rm db_vault_auth.txt
-rm webserver_vault_auth.txt
-rm client_vault_auth.txt
-rm ${VMID}.txt
+rm *.txt
