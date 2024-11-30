@@ -30,7 +30,7 @@ sudo echo "deb [signed-by=/etc/apt/keyrings/opennebula.gpg] https://downloads.op
 sudo apt update && sudo apt -y upgrade && sudo apt -y install ansible opennebula-tools python3-pip
 
 # create vms and write prvate ips to /etc/ansible/hosts
-ansible-playbook ../ansible/instantiate.yaml --vault_id webserver@webserver_vault_auth.txt --vault-id db@db_vault_auth.txt --vault-id client@client_vault_auth.txt
+ansible-playbook ../ansible/instantiate.yaml --vault-id ws@webserver_vault_auth.txt --vault-id db@db_vault_auth.txt --vault-id client@client_vault_auth.txt
 
 # for setting up passwordless ssh
 echo "Extracting OpenNebula logins credentials into Main.sh"

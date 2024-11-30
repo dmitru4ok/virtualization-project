@@ -3,7 +3,7 @@
     hosts: db
     become: true
     vars_files:
-      - ../misc/credentials.yaml
+      - ../misc/db_credentials.yaml
       - ../misc/ON_db.yaml
     vars:
       default_container_name: postgres-server
