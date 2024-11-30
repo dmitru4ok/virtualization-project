@@ -77,10 +77,17 @@
           dest: ~/web
       
       - name: build container
+        community.docker.docker_image:
+          name: "{{ img_name }}"
+          build:
+            path: ~/web
+          source: build
+  
+      - name: run container
         community.docker.docker_container:
-          name: "{{ container_name }}"
           image: "{{ img_name }}"
-          state: present
+          name: "{{ container_name }}"
+          state: started
           env:
             ON_LOGIN: "{{ webserver_vm_username }}"
             ON_PASS: "{{ webserver_vm_on_pass }}"
@@ -90,9 +97,3 @@
             DB_HOST: "{{ db_ip }}"
           ports:
             - "5432:5432"
-  
-      - name: run container
-        community.docker.docker_container:
-          image: telecomm_provider
-          name: "{{ container_name }}"
-          state: started
