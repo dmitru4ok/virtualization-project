@@ -4,6 +4,7 @@
     become: true
     vars_files:
       - ../misc/credentials.yaml
+      - ../misc/ON_db.yaml
     vars:
       default_container_name: postgres-server
       default_container_image: postgres

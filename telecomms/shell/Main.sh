@@ -1,31 +1,21 @@
-# to be run on ubuntu 22/deb 12
+# to be run on ubuntu 22
 
-read -sp "VM_PASSWORD: " VM_PASS
+read -sp "VM sudo password: " VM_PASS
 echo
 
-# (to be sbstituted with ansible-vault)
-# -----
-echo "CREDENTIALS REQUIRED FOR creating WEBSERVER VM: "
-read -p "OpenNebula login: " WEBSERVER_VM_UNAME
-read -sp "OpenNebula password: " WEBSERVER_VM_PASS
+read -sp "Ansible-vault password for webserver user: " WEBSERVER_ANS_PASS
 echo
 
-echo "CREDENTIALS REQUIRED FOR creating DB VM: "
-read -p "OpenNebula login: " DB_VM_UNAME
-read -sp "OpenNebula password: " DB_VM_PASS
+read -sp "Ansible-vault password for databse user: " DB_ANS_PASS
 echo
 
-echo "CREDENTIALS REQUIRED FOR creating CLIENT VM: "
-read -p "OpenNebula login: " CLIENT_VM_UNAME
-read -sp "OpenNebula password: " CLIENT_VM_PASS
+read -sp "Ansible-vault password for client user: " CLIENT_ANS_PASS
 echo
 
-mkdir -p /root/auth
-echo "$WEBSERVER_VM_UNAME:$WEBSERVER_VM_PASS" > /root/auth/webserver_auth
-echo "$DB_VM_UNAME:$DB_VM_PASS" > /root/auth/db_auth
-echo "$CLIENT_VM_UNAME:$CLIENT_VM_PASS" > /root/auth/client_auth
-echo ${VM_PASS} > vault-pass.txt
-# -------
+echo $WEBSERVER_ANS_PASS > webserver_vault_auth.txt
+echo $DB_ANS_PASS > db_vault_auth.txt
+echo $CLIENT_ANS_PASS > client_vault_auth.txt
+echo $VM_PASS > vm-sudo-pass.txt
 
 sudo apt update
 UBUNTU_CODENAME=jammy
@@ -40,24 +30,23 @@ sudo echo "deb [signed-by=/etc/apt/keyrings/opennebula.gpg] https://downloads.op
 sudo apt update && sudo apt -y upgrade && sudo apt -y install ansible opennebula-tools python3-pip
 
 # create vms and write prvate ips to /etc/ansible/hosts
-sudo ansible-playbook ../ansible/instantiate.yaml
+ansible-playbook ../ansible/instantiate.yaml --vault_id webserver@webserver_vault_auth.txt --vault-id db@db_vault_auth.txt --vault-id client@client_vault_auth.txt
+
+# for setting up passwordless ssh
+echo "Extracting OpenNebula logins credentials into Main.sh"
+WEBSERVER_VM_UNAME=$(ansible-vault view ../misc/ON_webserver.yaml --vault-id webserver@webserver_vault_auth.txt | grep webserver_vm_username | cut -d ":" -f 2 | tr -d " ")
+DB_VM_UNAME=$(ansible-vault view ../misc/ON_db.yaml --vault-id db@db_vault_auth.txt | grep db_vm_username | cut -d ":" -f 2 | tr -d " ")
+CLIENT_VM_UNAME=$(ansible-vault view ../misc/ON_client.yaml --vault-id client@client_vault_auth.txt | grep client_vm_username | cut -d ":" -f 2 | tr -d " ")
 
 WEBSERVER_PRIVATE_IP=$(awk '/\[webserver\]/ {getline; print}' /etc/ansible/hosts)
 DB_PRIVATE_IP=$(awk '/\[db\]/ {getline; print}' /etc/ansible/hosts)
 CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
-ansible-vault decrypt ../misc/credentials.yaml --vault-password-file vault-pass.txt
-echo "ansible_become_pass: ${VM_PASS}" >> ../misc/credentials.yaml
-echo "db_vm_username: ${DB_VM_UNAME}" >> ../misc/credentials.yaml
-echo "db_ip: ${DB_PRIVATE_IP}" >> ../misc/credentials.yaml
-echo "webserver_vm_username: ${WEBSERVER_VM_UNAME}" >> ../misc/credentials.yaml
-echo "webserver_vm_on_pass: ${WEBSERVER_VM_PASS}" >> ../misc/credentials.yaml
-echo "client_vm_username: ${CLIENT_VM_UNAME}" >> ../misc/credentials.yaml
-ansible-vault encrypt ../misc/credentials.yaml --vault-password-file vault-pass.txt
 
+# for creating Opennebula client on the backend
+WEBSERVER_VM_PASS=$(ansible-vault view ../misc/ON_webserver.yaml --vault-id webserver@webserver_vault_auth.txt | grep webserver_vm_password | cut -d ":" -f 2 | tr -d " ")
 
-
-# sometimes require time even after the instantiation playbook
+# sometimes require time even after the state is "present" in the playbook
 sleep 15
 
 eval "$(ssh-agent -s)" 
@@ -68,12 +57,9 @@ sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $DB_VM_UNAME@$DB_PRI
 sshpass -p $VM_PASS ssh-copy-id -o StrictHostKeyChecking=no $CLIENT_VM_UNAME@$CLIENT_PRIVATE_IP
 
 
-
-# can safely execute ansible playbooks here, for example:
-# REFACTOR --extra-vars into inventory files (encrypt with vault)
-ansible-playbook ../ansible/database.yaml --vault-password-file vault-pass.txt
-ansible-playbook ../ansible/webserver.yaml --vault-password-file vault-pass.txt
-ansible-playbook ../ansible/client.yaml --vault-password-file vault-pass.txt
+ansible-playbook ../ansible/database.yaml --vault-id db@db_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS"
+ansible-playbook ../ansible/webserver.yaml --vault_id webserver@webserver_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS db_ip=$DB_PRIVATE_IP"
+ansible-playbook ../ansible/client.yaml --vault-id client@client_vault_auth.txt --extra-vars="ansible_become_pass=$VM_PASS"
 
 
 ENDPOINT=https://grid5.mif.vu.lt/cloud3/RPC2
@@ -90,5 +76,8 @@ echo "WEBAPP DEPLOYED"
 echo "ACCESSIBLE AT: http://${PUBLIC_IP}:${PORT}"
 echo "-----------------------------------------"
 
-rm vault-pass.txt
+rm vm-sudo-pass.txt
+rm db_vault_auth.txt
+rm webserver_vault_auth.txt
+rm client_vault_auth.txt
 rm ${VMID}.txt

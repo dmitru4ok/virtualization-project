@@ -4,7 +4,8 @@
     become: yes
     hosts: webserver
     vars_files:
-      - ../misc/credentials.yaml
+      - ../misc/ON_webserver.yaml
+      - ../misc/db_credentials.yaml
     vars:
       container_name: provider_app
       img_name: telecomm_provider
@@ -59,7 +60,7 @@
             - python3-requests
           state: present
         
-      - name: Ensure Docker runs
+      - name: check if docker runs
         systemd:
           name: docker
           state: started
@@ -71,7 +72,7 @@
           state: directory
           mode: '0755'
   
-      - name: copy web folder from ansible to webserver
+      - name: copy web folder from ansible-vm to webserver webfolder
         ansible.builtin.copy:
           src: ~/virtualization-project/telecomms/web/
           dest: ~/web
@@ -90,7 +91,7 @@
           state: started
           env:
             ON_LOGIN: "{{ webserver_vm_username }}"
-            ON_PASS: "{{ webserver_vm_on_pass }}"
+            ON_PASS: "{{ webserver_vm_password }}"
             DB_USER: "{{ POSTGRES_USER }}"
             DB_PASSWORD: "{{ POSTGRES_PASSWORD }}"
             DB_NAME: "{{ POSTGRES_DB }}"

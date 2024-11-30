@@ -1,2 +1,2 @@
-ON_LOGIN: login123
-ON_PASSWORD: password123
+db_vm_username: login123
+db_vm_password: password123
