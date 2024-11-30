@@ -1,0 +1,4 @@
+---
+ansible_become_pass:
+client_user:
+client_password:
