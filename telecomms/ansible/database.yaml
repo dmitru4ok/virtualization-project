@@ -49,7 +49,9 @@
   
       - name: Install Docker Module for Python
         pip:
-          name: docker
+          name: 
+            - docker
+            - psycopg2-binary
   
       - name: Pull Postgres Docker image
         community.docker.docker_image:
@@ -79,11 +81,15 @@
   
       - name: Copy database setup script to remote host
         ansible.builtin.copy:
-          src: ../shell/database_setup.sh
-          dest: /tmp/database_setup.sh
+          src:  ~/virtualization-project/telecomms/misc/dbsetup.sql
+          dest: /tmp/
           mode: '0755'
   
-      - name: Execute database setup script
-        ansible.builtin.shell: /tmp/database_setup.sh
-        args:
-          executable: /bin/bash
+      - name: setup database tables
+        community.postgresql.postgresql_script:
+          path: /tmp/dbsetup.sql
+          db: "{{ POSTGRES_DB }}"
+          login: "{{ POSTGRES_USER }}"
+          login_password: "{{ POSTGRES_PASSWORD }}"
+          host: "127.0.0.1"
+          
