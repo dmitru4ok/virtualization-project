@@ -3,10 +3,10 @@
   hosts: client
   become: true
   vars_files:
-      - ../misc/credentials.yaml
+      - ../misc/client_auth.yaml
   vars:
-    ansible_user: "{{ client_vm_username }}"
-  
+    ansible_user: "{{ client_user }}"
+
   tasks:
     - name: Ensure /var/lib/apt/lists/ directory exists
       file:
@@ -25,7 +25,10 @@
           - dbus
           - dbus-x11
           - libxss1
+          - libappindicator3-1
+          - libindicator7
           - wget
+          - gnupg
           - w3m
         state: present
 
@@ -42,7 +45,7 @@
         mkdir -p /run/user/$(id -u)
         chown $(id -u):$(id -g) /run/user/$(id -u)
       become: false
-      
+
     - name: Ensure environment setup for Weston
       file:
         path: "/run/user/{{ ansible_user }}"
@@ -50,7 +53,7 @@
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: '0700'
-        
+
     - name: Verify XDG_RUNTIME_DIR is set
       ansible.builtin.lineinfile:
         path: ~/.bashrc
