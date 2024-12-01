@@ -3,7 +3,7 @@
   hosts: client
   become: true
   vars_files:
-      - ../misc/credentials.yaml
+      - ../misc/ON_client.yaml
   vars:
     ansible_user: "{{ client_vm_username }}"
   
