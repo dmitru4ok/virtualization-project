@@ -57,7 +57,7 @@ CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
 # insert db_private ip into ws_auth credentials
 ansible-vault decrypt ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE
-echo "db_ip: ${DB_PRIVATE_IP}" > ../misc/ws_auth.yaml
+echo "db_ip: ${DB_PRIVATE_IP}" >> ../misc/ws_auth.yaml
 ansible-vault encrypt ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE
 
 # sometimes require time even after the instantiation playbook
