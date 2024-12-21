@@ -35,30 +35,30 @@ sudo echo "deb [signed-by=/etc/apt/keyrings/opennebula.gpg] https://downloads.op
 sudo apt update && sudo apt -y upgrade && sudo apt -y install ansible opennebula-tools python3-pip
 
 # OPENNEBULA accouns usernames for ssh-ing
-DB_USER=$(ansible-vault view ../misc/db_auth.yaml --vault-password-file $DB_PASS | grep "db_user" | awk '{print $2}')
-WS_USER=$(ansible-vault view ../misc/ws_auth.yaml --vault-password-file $WS_PASS | grep "ws_user" | awk '{print $2}')
-CLIENT_USER=$(ansible-vault view ../misc/client_auth.yaml --vault-password-file $CLIENT_PASS | grep "client_user" | awk '{print $2}')
+DB_USER=$(ansible-vault view ../misc/db_auth.yaml --vault-id db@$DB_PASS_FILE | grep "db_user" | awk '{print $2}')
+WS_USER=$(ansible-vault view ../misc/ws_auth.yaml --vault-id  ws@$WS_PASS_FILE | grep "ws_user" | awk '{print $2}')
+CLIENT_USER=$(ansible-vault view ../misc/client_auth.yaml --vault-id client@$CLIENT_PASS_FILE | grep "client_user" | awk '{print $2}')
 
 # getting sudo passwords
-DB_VM_PASSWORD=$(ansible-vault view ../misc/db_auth.yaml --vault-password-file $DB_PASS | grep "ansible_become_pass" | awk '{print $2}')
-WS_VM_PASSWORD=$(ansible-vault view ../misc/ws_auth.yaml --vault-password-file $WS_PASS | grep "ansible_become_pass" | awk '{print $2}')
-CLIENT_VM_PASSWORD=$(ansible-vault view ../misc/client_auth.yaml --vault-password-file $CLIENT_PASS | grep "ansible_become_pass" | awk '{print $2}')
+DB_VM_PASSWORD=$(ansible-vault view ../misc/db_auth.yaml --vault-id db@$DB_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
+WS_VM_PASSWORD=$(ansible-vault view ../misc/ws_auth.yaml --vault-id  ws@$WS_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
+CLIENT_VM_PASSWORD=$(ansible-vault view ../misc/client_auth.yaml --vault-id client@$CLIENT_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
 
 # to list all the vms using opennebula tools
-WS_NEBULA_PASSWORD=$(ansible-vault view ../misc/ws_auth.yaml --vault-password-file $WS_PASS | grep "ws_password" | awk '{print $2}')
+WS_NEBULA_PASSWORD=$(ansible-vault view ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE | grep "ws_password" | awk '{print $2}')
 
 
 # create vms and write prvate ips to /etc/ansible/hosts
-sudo ansible-playbook ../ansible/instantiate.yaml --vault-id ws@vault_passwords/ws_pass.txt --vault-id db@vault_passwords/db_pass.txt --vault-id client@vault_passwords/client_pass.txt
+sudo ansible-playbook ../ansible/instantiate.yaml --vault-id ws@$WS_PASS_FILE --vault-id db@$DB_PASS_FILE --vault-id client@$CLIENT_PASS_FILE
 
 WEBSERVER_PRIVATE_IP=$(awk '/\[webserver\]/ {getline; print}' /etc/ansible/hosts)
 DB_PRIVATE_IP=$(awk '/\[db\]/ {getline; print}' /etc/ansible/hosts)
 CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
-# insert db_private ip into ws_auth credentials file
-ansible-vault decrypt ../misc/ws_auth.yaml --vault-id ws@vault_passwords/ws_pass.txt
+# insert db_private ip into ws_auth credentials
+ansible-vault decrypt ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE
 echo "db_ip: ${DB_PRIVATE_IP}" > ../misc/ws_auth.yaml
-ansible-vault encrypt ../misc/ws_auth.yaml --vault-id ws@vault_passwords/ws_pass.txt
+ansible-vault encrypt ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE
 
 # sometimes require time even after the instantiation playbook
 sleep 15
@@ -71,9 +71,10 @@ sshpass -p "$DB_VM_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no "$DB_USER@$
 sshpass -p "$CLIENT_VM_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no "$CLIENT_USER@$CLIENT_PRIVATE_IP"
 
 # REFACTOR --extra-vars into inventory files (encrypt with vault)
-ansible-playbook ../ansible/database.yaml --vault-id db@vault_passwords/db_pass.txt
-ansible-playbook ../ansible/webserver.yaml --vault-id ws@vault_passwords/ws_pass.txt
-ansible-playbook ../ansible/client.yaml --vault-id client@vault_passwords/client_pass.txt
+--vault-id client@$CLIENT_PASS_FILE
+ansible-playbook ../ansible/database.yaml --vault-id db@$DB_PASS_FILE
+ansible-playbook ../ansible/webserver.yaml --vault-id ws@$WS_PASS_FILE
+ansible-playbook ../ansible/client.yaml --vault-id client@$CLIENT_PASS_FILE
 
 ENDPOINT=https://grid5.mif.vu.lt/cloud3/RPC2
 VMQUERY=$(onevm list --user "$WS_USER" --password "$WS_NEBULA_PASSWORD" --endpoint $ENDPOINT | grep webserver-vm)
@@ -89,5 +90,5 @@ echo "WEBAPP DEPLOYED"
 echo "ACCESSIBLE AT: http://${PUBLIC_IP}:${PORT}"
 echo "-----------------------------------------"
 
-rm -rf vault_passwords
+rm -rf $TEMP_DIR
 rm ${VMID}.txt
