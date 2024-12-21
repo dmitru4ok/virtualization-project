@@ -71,7 +71,6 @@ sshpass -p "$DB_VM_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no "$DB_USER@$
 sshpass -p "$CLIENT_VM_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no "$CLIENT_USER@$CLIENT_PRIVATE_IP"
 
 # REFACTOR --extra-vars into inventory files (encrypt with vault)
---vault-id client@$CLIENT_PASS_FILE
 ansible-playbook ../ansible/database.yaml --vault-id db@$DB_PASS_FILE
 ansible-playbook ../ansible/webserver.yaml --vault-id ws@$WS_PASS_FILE
 ansible-playbook ../ansible/client.yaml --vault-id client@$CLIENT_PASS_FILE
