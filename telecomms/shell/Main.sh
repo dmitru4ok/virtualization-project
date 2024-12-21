@@ -35,17 +35,17 @@ sudo echo "deb [signed-by=/etc/apt/keyrings/opennebula.gpg] https://downloads.op
 sudo apt update && sudo apt -y upgrade && sudo apt -y install ansible opennebula-tools python3-pip
 
 # OPENNEBULA accouns usernames for ssh-ing
-DB_USER=$(ansible-vault view ../misc/db_auth.yaml --vault-id db@$DB_PASS_FILE | grep "db_user" | awk '{print $2}')
-WS_USER=$(ansible-vault view ../misc/ws_auth.yaml --vault-id  ws@$WS_PASS_FILE | grep "ws_user" | awk '{print $2}')
-CLIENT_USER=$(ansible-vault view ../misc/client_auth.yaml --vault-id client@$CLIENT_PASS_FILE | grep "client_user" | awk '{print $2}')
+DB_USER=$(ansible-vault view $DB_VAULT_FILE --vault-id db@$DB_PASS_FILE | grep "db_user" | awk '{print $2}')
+WS_USER=$(ansible-vault view $WS_VAULT_FILE --vault-id  ws@$WS_PASS_FILE | grep "ws_user" | awk '{print $2}')
+CLIENT_USER=$(ansible-vault view $CLIENT_VAULT_FILE --vault-id client@$CLIENT_PASS_FILE | grep "client_user" | awk '{print $2}')
 
-# getting sudo passwords
-DB_VM_PASSWORD=$(ansible-vault view ../misc/db_auth.yaml --vault-id db@$DB_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
-WS_VM_PASSWORD=$(ansible-vault view ../misc/ws_auth.yaml --vault-id  ws@$WS_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
-CLIENT_VM_PASSWORD=$(ansible-vault view ../misc/client_auth.yaml --vault-id client@$CLIENT_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
+# getting sudo passwords for each vm
+DB_VM_PASSWORD=$(ansible-vault view $DB_VAULT_FILE --vault-id db@$DB_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
+WS_VM_PASSWORD=$(ansible-vault view $WS_VAULT_FILE --vault-id  ws@$WS_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
+CLIENT_VM_PASSWORD=$(ansible-vault view $CLIENT_VAULT_FILE --vault-id client@$CLIENT_PASS_FILE | grep "ansible_become_pass" | awk '{print $2}')
 
 # to list all the vms using opennebula tools
-WS_NEBULA_PASSWORD=$(ansible-vault view ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE | grep "ws_password" | awk '{print $2}')
+WS_NEBULA_PASSWORD=$(ansible-vault view $WS_VAULT_FILE --vault-id ws@$WS_PASS_FILE | grep "ws_password" | awk '{print $2}')
 
 
 # create vms and write prvate ips to /etc/ansible/hosts
@@ -56,9 +56,9 @@ DB_PRIVATE_IP=$(awk '/\[db\]/ {getline; print}' /etc/ansible/hosts)
 CLIENT_PRIVATE_IP=$(awk '/\[client\]/ {getline; print}' /etc/ansible/hosts)
 
 # insert db_private ip into ws_auth credentials
-ansible-vault decrypt ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE
-echo "db_ip: ${DB_PRIVATE_IP}" >> ../misc/ws_auth.yaml
-ansible-vault encrypt ../misc/ws_auth.yaml --vault-id ws@$WS_PASS_FILE
+ansible-vault decrypt $WS_VAULT_FILE --vault-id ws@$WS_PASS_FILE
+echo "db_ip: ${DB_PRIVATE_IP}" >> $WS_VAULT_FILE
+ansible-vault encrypt $WS_VAULT_FILE --vault-id ws@$WS_PASS_FILE
 
 # sometimes require time even after the instantiation playbook
 sleep 15
